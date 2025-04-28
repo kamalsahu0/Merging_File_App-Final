@@ -47,7 +47,7 @@ def clean_data(df):
     if "Completion %" in df.columns:
         original_shape = df.shape
         df = df.dropna(subset=["Completion %"])
-        st.info(f"Cleaned and Removed rows with 'N/A' in completion %: {original_shape[0] - df.shape[0]}")
+        st.info(f"Cleaned and Removed rows with 'N/A' in Completion %: {original_shape[0] - df.shape[0]} rows")
     return df
 
 def reset_session():
@@ -87,11 +87,20 @@ def merge_datasets(base_df, new_df, key_base, key_new, join_type='left'):
         st.error(f"Merge failed due to error: {e}")
         return None
 
-def download_csv(df, filename="Merged_Data.csv"):
+def download_output_file(df, filename):
     buffer = BytesIO()
-    df.to_csv(buffer, index=False)
+    if filename.endswith(".csv"):
+        df.to_csv(buffer, index=False)
+        mime_type = "text/csv"
+    elif filename.endswith(".xlsx"):
+        with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+            df.to_excel(writer, index=False, sheet_name='Sheet1')
+        mime_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    else:
+        st.error("Invalid file extension. Please use .csv or .xlsx only.")
+        return None, None
     buffer.seek(0)
-    st.download_button("Download Merged CSV", buffer, file_name=filename, mime="text/csv")
+    return buffer, mime_type
 
 # File Upload & Sheet Selector
 uploaded_files = st.file_uploader(
@@ -200,6 +209,7 @@ else:
                     else:
                         st.error(f"Merging `{file}` failed. Step not incremented.")
 
+        # Final Merged Output Section
         st.markdown("---")
         st.subheader("Final Merged Output")
 
@@ -213,10 +223,21 @@ else:
             output_df = st.session_state.merged_df[selected_cols]
             st.dataframe(output_df, use_container_width=True)
 
-            filename = st.text_input("Enter output file name", value="merged_output")
+            filename = st.text_input("Enter output file name (must end with .csv or .xlsx)")
+
             if filename:
-                if not filename.endswith(".csv"):
-                    filename += ".csv"
-                download_csv(output_df, filename)
+                if not (filename.endswith(".csv") or filename.endswith(".xlsx")):
+                    st.error("Please enter the Merge Output File name with .csv or .xlsx extension.")
+                else:
+                    buffer, mime_type = download_output_file(output_df, filename)
+                    if buffer:
+                        st.download_button(
+                            label="Download Merged File",
+                            data=buffer,
+                            file_name=filename,
+                            mime=mime_type
+                        )
+            else:
+                st.warning("Please enter the Merge Output File name with .csv or .xlsx extension.")
         else:
             st.warning("Select at least one column to proceed.")
