@@ -229,15 +229,19 @@ else:
                 if not (filename.endswith(".csv") or filename.endswith(".xlsx")):
                     st.error("Please enter the Merge Output File name with .csv or .xlsx extension.")
                 else:
-                    buffer, mime_type = download_output_file(output_df, filename)
-                    if buffer:
-                        st.download_button(
-                            label="Download Merged File",
-                            data=buffer,
-                            file_name=filename,
-                            mime=mime_type
-                        )
+                    # Button click triggers file preparation and download
+                    if st.button("Prepare & Download Merged File"):
+                        buffer, mime_type = download_output_file(output_df, filename)
+                        if buffer:
+                            st.download_button(
+                                label="Download Merged File",
+                                data=buffer,
+                                file_name=filename,
+                                mime=mime_type,
+                                key="download_button"  # add key to force fresh evaluation
+                            )
             else:
                 st.warning("Please enter the Merge Output File name with .csv or .xlsx extension.")
         else:
             st.warning("Select at least one column to proceed.")
+            filename = st.text_input("Enter output file name (must end with .csv or .xlsx)")            
