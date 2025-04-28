@@ -1,3 +1,4 @@
-openpyxl>=3.0.0
-pandas>=1.0.0  # if you're using pandas to read Excel
 streamlit>=1.0.0
+pandas>=1.0.0
+openpyxl>=3.0.0
+xlsxwriter>=1.0.0
