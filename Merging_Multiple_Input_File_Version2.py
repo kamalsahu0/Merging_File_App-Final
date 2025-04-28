@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
 import streamlit as st
 import pandas as pd
 from io import BytesIO
@@ -457,5 +450,3 @@ else:
                 download_csv(output_df, filename)
         else:
             st.warning("Select at least one column to proceed.")
-
->>>>>>> a90a673 (Increase limit to 2gb)
